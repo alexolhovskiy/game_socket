@@ -9,8 +9,9 @@ def register_sockets(socketio):
     @socketio.on('connect')
     def on_connect():
         print(f"🟢 Connected: {request.sid}")
-        players[request.sid] = {"x": 100, "y": 100}
+        players[request.sid] = {"x": 100, "y": 100, "ang": 0}
         emit("players", players, broadcast=True)
+        emit("your_id", request.sid)
 
     @socketio.on('disconnect')
     def on_disconnect():
@@ -22,11 +23,6 @@ def register_sockets(socketio):
     def on_update_player(data):
         players[request.sid] = data  # data = {x: ..., y: ...}
         emit("players", players, broadcast=True)
-
-    # @socketio.on('new_bullet')
-    # def handle_new_bullet(data):
-    #     emit('new_bullet', data, broadcast=True, include_self=False)
-
 
     @socketio.on("new_bullet")
     def on_new_bullet(data):
