@@ -7,6 +7,12 @@ import random
 players = {}
 
 def register_sockets(socketio):
+    
+    @socketio.on('ping_check')
+    def handle_ping_check():
+        emit('pong_check')
+
+
     @socketio.on('connect')
     def on_connect():
         print(f"🟢 Connected: {request.sid}")
