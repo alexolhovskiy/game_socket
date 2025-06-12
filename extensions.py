@@ -7,6 +7,9 @@ from datetime import timedelta
 from flask_socketio import SocketIO
 
 
+
+
+
 socketio = SocketIO(cors_allowed_origins="*")  # Поддержка CORS для фронта
 
 # 🔹 Создаём экземпляры расширений
@@ -27,7 +30,8 @@ def create_app():
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
-    CORS(app, supports_credentials=True)
+    # CORS(app, supports_credentials=True)
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173", "https://your-frontend.onrender.com"])
     socketio.init_app(app)  # 💡 добавляем сюда
 
     return app
