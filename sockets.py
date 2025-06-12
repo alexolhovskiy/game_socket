@@ -35,6 +35,8 @@ from models import User
 from flask import request
 from flask_socketio import emit, disconnect,join_room, leave_room
 import time
+from app import db
+from models import User
 
 
 players = {}
@@ -43,39 +45,37 @@ def register_sockets(socketio):
 
     @socketio.on('connect')
     def on_connect(auth):
-        print(f"🟢 Подключение: {request.sid}")
-        
-        token = auth.get('token') if auth else None
+        print(f"[SOCKET CONNECT] SID: {request.sid}, AUTH: {auth}")
+
+        token = auth.get("token") if auth else None
         if not token:
-            print("⛔ Нет токена! Отключаем.")
+            print("[SOCKET] ❌ Нет токена")
             return disconnect()
 
         try:
             decoded = decode_token(token)
-            user_id = decoded['sub']
-            user = User.query.get(user_id)
+            user_id = decoded["sub"]  # или "identity" — зависит от настройки JWT
+            user = db.session.get(User, user_id)
+
             if not user:
-                print("⛔ Пользователь не найден.")
+                print("[SOCKET] ❌ Пользователь не найден")
                 return disconnect()
 
-            print(f"✅ Пользователь {user.username} вошёл в игру.")
-
-            # Добавляем игрока
-            players[request.sid] = {
-                "x": 100,
-                "y": 100,
-                "ang": 0,
-                "username": user.username,
-                "color": user.color,
-                "id": user.id
-            }
-
-            emit("players", players, broadcast=True)
-            emit("your_id", request.sid)
-
         except Exception as e:
-            print("⛔ Ошибка при проверке токена:", str(e))
+            print("[SOCKET] ❌ Ошибка при разборе токена:", str(e))
             return disconnect()
+
+        # ✅ Всё ок, добавляем игрока
+        players[request.sid] = {
+            "x": 100, "y": 100, "ang": 0,
+            "username": user.username,
+            "color": user.color,
+            "id": user.id
+        }
+
+        emit("your_id", request.sid)
+        emit("players", players, broadcast=True)
+        print(f"[SOCKET] ✅ Подключился: {user.username} (id: {user.id})")
 
     @socketio.on('disconnect')
     def on_disconnect():
