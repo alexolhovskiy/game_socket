@@ -58,20 +58,23 @@ def register_routes(app):
 
     @app.route('/api/login', methods=['POST'])
     def login():
-        
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
 
+        # 💥 проверка пустых полей
+        if not email or not password:
+            return jsonify({"error": "Missing email or password"}), 400
+
         user = User.query.filter_by(email=email).first()
+
         if not user or not bcrypt.check_password_hash(user.password, password):
             return jsonify({"error": "Invalid credentials"}), 401
 
-        # access = create_access_token(identity=email)
         access = create_access_token(identity=user.id)
         refresh = create_refresh_token(identity=user.id)
-        return jsonify(access_token=access, refresh_token=refresh)
-
+        return jsonify(access_token=access, refresh_token=refresh), 200
+    
     @app.route('/api/protected')
     @jwt_required()
     def protected():
