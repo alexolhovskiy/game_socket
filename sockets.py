@@ -35,7 +35,7 @@ from models import User
 from flask import request
 from flask_socketio import emit, disconnect,join_room, leave_room
 import time
-from app import db
+from extensions import db
 from models import User
 
 
