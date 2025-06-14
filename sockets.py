@@ -26,9 +26,19 @@ def register_sockets(socketio):
         players.pop(request.sid, None)
         emit("players", players, broadcast=True)
 
+    # @socketio.on("update_player")
+    # def on_update_player(data):
+    #     players[request.sid] = data  # data = {x: ..., y: ...}
+    #     emit("players", players, broadcast=True)
     @socketio.on("update_player")
     def on_update_player(data):
-        players[request.sid] = data  # data = {x: ..., y: ...}
+        # Добавляем серверное время (timestamp в миллисекундах)
+        server_timestamp = int(time.time()*1000)  # или просто time.time() для секунд
+
+        data["timestamp"] = server_timestamp  # ⬅️ вот здесь вставляем
+
+        players[request.sid] = data
+
         emit("players", players, broadcast=True)
 
     @socketio.on("new_bullet")
